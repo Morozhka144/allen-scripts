@@ -4,7 +4,36 @@ if env.__MORO_INK_HUB then
     pcall(env.__MORO_INK_HUB.Destroy, env.__MORO_INK_HUB)
 end
 
-local Library = loadstring(readfile("MoroElite.lua"))()
+local function loadMoroElite()
+    local cache = "MoroElite.lua"
+    local function run(src, origin)
+        local fn, err = loadstring(src)
+        if not fn then warn("[MoroElite Ink] compile error (" .. origin .. "): " .. tostring(err)) return nil end
+        local ok, lib = pcall(fn)
+        if not ok or not lib then warn("[MoroElite Ink] init error (" .. origin .. "): " .. tostring(lib)) return nil end
+        return lib
+    end
+
+    local url = "https://raw.githubusercontent.com/Morozhka144/GUI2222/main/MoroElite.lua"
+    local ok, content = pcall(function() return game:HttpGet(url) end)
+    if ok and type(content) == "string" and #content > 1000 then
+        local lib = run(content, "GitHub")
+        if lib then
+            if writefile then pcall(writefile, cache, content) end
+            return lib
+        end
+    elseif not ok then
+        warn("[MoroElite Ink] Could not download MoroElite: " .. tostring(content))
+    end
+
+    if isfile and isfile(cache) and readfile then
+        local lib = run(readfile(cache), "cache")
+        if lib then return lib end
+    end
+    error("Failed to load MoroElite.lua from GitHub or local cache")
+end
+
+local Library = loadMoroElite()
 
 local Window = Library:CreateWindow({
     Title = "Moro Elite",
